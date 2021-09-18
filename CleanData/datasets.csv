@@ -1,0 +1,5 @@
+dataset_id,name,country,location,lat,lng,year,group_id,user_id,bwg_release,public_release,num_species,num_visits,num_bromeliads
+51,Pitilla1997,Costa Rica,Pitilla,1214545.8789978123,671214.8319970268,1997,NA,NA,2016-01-06,2018-06-01,29,1,20
+56,Pitilla2000,Costa Rica,Pitilla,1214545.8789978123,671214.8319970268,2000,NA,NA,2016-01-06,2018-01-06,32,2,20
+61,Pitilla2002,Costa Rica,Pitilla,1214545.8789978123,671214.8319970268,2002,NA,NA,2016-01-06,2018-01-06,32,1,18
+71,Pitilla2010,Costa Rica,Pitilla,1214545.8789978123,671214.8319970268,2010,NA,NA,2016-04-17,2016-04-17,21,1,18

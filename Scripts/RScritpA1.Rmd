@@ -1,0 +1,103 @@
+---
+title: "Data Cleaning and Standards"
+output: html_notebook
+author:
+- Lina Aragón-Baquero
+date: "`r format(Sys.time(), '%d %B %Y')`"
+---
+
+# **Selected Task**
+
+For this first assignment, I will do the cleaning task #1: Convert all dates and geographic coordinates to ISO standards. [suggested packages: lubridate and rgdal; see example code in tutorial 2]. See ISO 8601 (Links to an external site.) for dates (yyyy-mm-dd). See ISO 6709 (Links to an external site.) for coordinates (UTM).
+
+# **Description of my data cleaning task**
+
+I choose to work with coordinates and dates because I used to find these two formats annoying and hard to work with. I used some of the code provided in tutorials 2 and 3 to upload the files in the BWG database. After that, I divided the task in two parts. First, I transform the coordinates to UTM system by transforming them to Spatial Points and the to the UTM coordinate system. Because I couldn’t create a continuous process to do this transformation and directly assign the new values to the “lng” and “lat” columns, I used the function mutate to replace the values in “lng” and “lat” with the values saved in the “xt_utm” matrix. The second part was to transform the two columns with dates (“bwg_release” and “public_release”) from "%d/%m/%Y" to "%Y/%m/%d". The important step here was to include in the code the type of format the column has because without providing it the process failed. Finally, I export the clean file as a .csv and saved in a folder inside my project called CleanData.
+
+# **Script**
+
+## 1. Load packages and database
+
+```{r}
+getwd()
+
+#required packages
+pkgs <- c("taxize", "assertr", "stringdist", 
+          "tidyverse", "palmerpenguins", "GGally",
+          "lubridate","rgdal","myTAI","dplyr","ggplot2","sf")
+
+#Load all the required packages
+lapply(pkgs, library, character.only = TRUE)
+
+#Check files in the BWG database
+BWGfiles <- list.files(path = "BWG_database/", pattern = "*.csv", full.names = TRUE)
+BWGfiles
+
+#Load all the files in the BWG database
+list2env(
+  lapply(
+    setNames(BWGfiles, 
+             make.names(
+               gsub(".*1_", "", 
+                    tools::file_path_sans_ext(BWGfiles)))), 
+    read_csv), 
+  envir = .GlobalEnv)
+
+```
+
+## 2. Convert coordinates to ISO in the the file "datasets" using code from tutorials
+
+```{r}
+#A. Summary datasets
+head(datasets)
+str(datasets)
+
+#B. Extract latitude and longitude
+xy<-datasets[c("lng","lat")]
+xy
+
+#B. Convert them to UTM
+## 1. Convert coordinates to "Spatial Points"
+
+coordinates(xy)<-c("lng","lat")
+proj4string(xy)<-CRS("+proj=longlat +datum=WGS84")
+xy
+
+##2. Transform xy "Spatial Points" to UTM coordinate system
+xy_utm<-spTransform(xy, CRS("+proj=utm +zone=16 +datum=WGS84"))
+xy_utm
+
+
+#D. Change the values of Latitude and Longitude in the datasets file and check
+datasets<- datasets %>% mutate(lng=xy_utm@coords[,1],lat=xy_utm@coords[,2])
+head(datasets)
+```
+
+
+## 3. Transform bwg_release and public_release to the correct date format
+
+```{r}
+#1. Check the formtat of the columns of interest
+
+class(datasets$bwg_release) #character
+class(datasets$public_release) #character
+
+#2. Transform the columns to type "Date"
+datasets$bwg_release <- lubridate::as_date(datasets$bwg_release, format = "%d/%m/%Y")
+class(datasets$bwg_release) 
+
+datasets$public_release <- lubridate::as_date(datasets$public_release, format = "%d/%m/%Y")
+class(datasets$bwg_release) 
+
+```
+
+## 4. Check and exports the new datasets files as .csv. Choose the folder CleanData as the designated location to keep track of the different versions. 
+
+```{r}
+head(datasets)
+write_csv(datasets, "CleanData/datasets.csv")
+```
+
+
+
+
